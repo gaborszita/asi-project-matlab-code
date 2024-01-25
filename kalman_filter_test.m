@@ -110,7 +110,9 @@ lidarAngs = deg2rad(poses(:, 8) - poses(1, 8));
 plot(poses(:, 1), (rad2deg(aprilTagAngs)), 'b');
 %plot(poses(:, 5), (rad2deg(lidarAngs)), 'r');
 plot(lidar_times, angleOverTime, 'c');
-[combinedTimes, combinedAngleOverTime] = combineAngles(lidar_times, deg2rad(angleOverTime), apriltag_times, aprilTagAngs);
+[combinedTimes, combinedAngleOverTime, combineIndexes] = combineAngles(lidar_times, deg2rad(angleOverTime), apriltag_times, aprilTagAngs);
+%figure(4);
+%hold on;
 plot(combinedTimes, rad2deg(combinedAngleOverTime), 'm');
 legend('Apriltag', 'lidar icp');
 
@@ -127,6 +129,9 @@ clf;
 title('Lidar with combined angle');
 hold on;
 plot(xOverTimeNew, yOverTimeNew, 'b');
+for i=1:length(combineIndexes)
+    scatter(xOverTimeNew(combineIndexes), yOverTimeNew(combineIndexes), 100, "red", "filled");
+end
 
 figure(7);
 clf;
@@ -139,6 +144,10 @@ clf;
 title('apriltag path');
 hold on;
 plot(xOverTimeAprilTag, yOverTimeAprilTag, 'b');
+
+figure(21);
+clf;
+graph_apriltag_angle(time1, time2, 7);
 
 function [xOverTime, yOverTime] = recalcCoordsNewHeading(times, xvals, yvals, angleOverTimeTimes, angleOverTime)
 
@@ -169,7 +178,15 @@ end
 
 end
 
-function [times, angleOverTime] = combineAngles(freqTimes, freqAngleOverTime, accurateTimes, accurateAngleOverTime)
+function [times, angleOverTime, combineIndexes] = combineAngles(freqTimes, freqAngleOverTime, accurateTimes, accurateAngleOverTime)
+
+%figure(6);
+%clf;
+%hold on;
+
+%scatter(0, 0, 200, "red", "filled");
+
+combineIndexes = [];
 
 times = [];
 angleOverTime = [];
@@ -181,8 +198,39 @@ for i=1:length(freqTimes)
 
     if accurateTimeIdx+1 <= length(accurateTimes) && freqTimes(i) >= accurateTimes(accurateTimeIdx+1)
         [~, accurateTimeIdx] = min(abs(accurateTimes - freqTimes(i)));
-        accurateAngle = accurateAngleOverTime(accurateTimeIdx);
-        freqAngleRef = freqAngleOverTime(i);
+        % comment lines below to disable combining
+
+        %timeDiff = 2*1000000000;
+        %[~, freqAngleBeforeIdx] = min(abs(freqTimes - (freqTimes(i) - timeDiff)));
+        %[~, accurateAngleBeforeIdx] = min(abs(accurateTimes - (accurateTimes(accurateTimeIdx) - timeDiff)));
+        %freqAngleDiff = freqAngleOverTime(i) - freqAngleOverTime(freqAngleBeforeIdx);
+        %accurateAngleDiff = getClosestAngle(freqAngleDiff, accurateAngleOverTime(accurateTimeIdx) - angleOverTime(accurateAngleBeforeIdx));
+
+        %disp('freq: ' + rad2deg(freqAngleDiff));
+        %disp('accurate: ' + rad2deg(accurateAngleDiff));
+
+        %if i>300
+        %    keyboard
+        %end
+
+        %if abs(freqAngleDiff - accurateAngleDiff) < deg2rad(0)
+        %    accurateAngle = accurateAngleOverTime(accurateTimeIdx);
+        %    freqAngleRef = freqAngleOverTime(i);
+        %end
+
+        timeDiff = 1000000000*0.5;
+        [~, freqAngleBeforeIdx] = min(abs(freqTimes - (freqTimes(i) - timeDiff)));
+        [~, freqAngleAfterIdx] = min(abs(freqTimes - (freqTimes(i) + timeDiff)));
+        freqAngleBefore = freqAngleOverTime(freqAngleBeforeIdx);
+        freqAngleAfter = freqAngleOverTime(freqAngleAfterIdx);
+        freqAngleNow = freqAngleOverTime(i);
+
+        toleranceAngle = 30;
+        if abs(freqAngleNow - freqAngleBefore) < deg2rad(toleranceAngle) && abs(freqAngleNow - freqAngleAfter) < deg2rad(toleranceAngle)
+            accurateAngle = accurateAngleOverTime(accurateTimeIdx);
+            freqAngleRef = freqAngleOverTime(i);
+            combineIndexes(end+1) = i;
+        end
     end
 
     angle = freqAngleOverTime(i) - freqAngleRef + accurateAngle;
@@ -202,6 +250,18 @@ for i=1:length(array)
     while array(i)>=360
         array(i) = array(i) - 360;
     end
+end
+
+end
+
+function angle = getClosestAngle(refAngle, angle)
+
+while angle-refAngle>=pi
+    angle = angle - 2*pi;
+end
+
+while angle-refAngle<-pi
+    angle = angle + 2*pi;
 end
 
 end

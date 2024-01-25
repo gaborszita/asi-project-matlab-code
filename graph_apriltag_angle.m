@@ -1,4 +1,4 @@
-function [apriltag_times, xTransform, yTransform, angleTransform, xOverTime, yOverTime, angleOverTime] = get_apriltag_pos(time1, time2)
+function [apriltag_times, xTransform, yTransform, angleTransform, xOverTime, yOverTime, angleOverTime] = graph_apriltag_angle(time1, time2, num)
 
 [aprilTagTime, aprilTagData] = getAprilTagData(time1, time2);
 
@@ -16,13 +16,14 @@ angleOverTime = [];
 
 idx = 1;
 
-length(aprilTagData)
+%length(aprilTagData)
+splitIndexesStart = [];
+splitIndexesEnd = [];
 
-%usingTagNums = [5, 7, 8];
-usingTagNums = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-
+lastIdx = -1;
+lastI = -1;
 for i=1:length(aprilTagData)
-    if i < 2 || (aprilTagData{i}(8) > 10*10^-7 && (ismember(aprilTagData{i}(7), usingTagNums)))% && i>250 && i<300
+    if (aprilTagData{i}(8) > 7*10^-7 && (aprilTagData{i}(7) == num))% && i>250 && i<300
         xOverTime(idx) = aprilTagData{i}(1);
         yOverTime(idx) = aprilTagData{i}(2);
         angleOverTime(idx) = aprilTagData{i}(6);
@@ -33,12 +34,68 @@ for i=1:length(aprilTagData)
     
         apriltag_times(idx) = aprilTagTime{i};
 
+      
+        if lastI < i-10
+            splitIndexesStart(end+1) = idx;
+            if length(splitIndexesStart) > 1
+                splitIndexesEnd(end+1) = lastIdx;
+            end
+        end
+
+        lastIdx = idx;
+        lastI = i;
+
         idx = idx + 1;
     end
 
     %if idx > 100
     %    break
     %end
+end
+
+splitIndexesEnd(end+1) = lastIdx;
+
+if isempty(splitIndexesStart)
+    splitIndexesStart(end+1) = 1;
+end
+
+hold on;
+for i=1:length(splitIndexesEnd)
+    startIdx = splitIndexesStart(i);
+    endIdx = splitIndexesEnd(i);
+    try
+        plot(apriltag_times(startIdx:endIdx), rad2deg(getClosestAngles(angleOverTime(startIdx:endIdx), angleOverTime(1))), 'b');
+    catch
+        keyboard
+    end
+end
+
+%plot(apriltag_times(1:5), rad2deg(getClosestAngles(angleOverTime(1:5))), 'b');
+%hold on;
+%plot(apriltag_times(10:20), rad2deg(getClosestAngles(angleOverTime(10:20))), 'b');
+
+end
+
+function angles = getClosestAngles(angles, refAngle)
+
+if nargin<2
+    refAngle = angles(1);
+end
+
+for i=1:length(angles)
+    angles(i) = getClosestAngle(refAngle, angles(i));
+end
+
+end
+
+function angle = getClosestAngle(refAngle, angle)
+
+while angle-refAngle>=pi
+    angle = angle - 2*pi;
+end
+
+while angle-refAngle<-pi
+    angle = angle + 2*pi;
 end
 
 end

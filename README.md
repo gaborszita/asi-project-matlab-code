@@ -2,6 +2,10 @@
 
 This repository is part of my work for my Advanced Science Investigation class at Los Altos High School. This repository contains log files from the robot and code for data analysis.
 
+# Log files
+
+Log files from the robot used for data analysis are available here: https://drive.google.com/drive/folders/1Yx7oCBHHGGLKgIzcHLdge5nvJrTNAXOM?usp=sharing
+
 ## Files description
 
 ### Data analysis files:

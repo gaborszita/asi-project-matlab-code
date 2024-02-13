@@ -22,7 +22,7 @@ length(aprilTagData)
 usingTagNums = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
 for i=1:length(aprilTagData)
-    if i < 2 || (aprilTagData{i}(8) > 10*10^-7 && (ismember(aprilTagData{i}(7), usingTagNums)))% && i>250 && i<300
+    if i < 2 || (aprilTagData{i}(8) > 0*10^-7 && (ismember(aprilTagData{i}(7), usingTagNums)))% && i>250 && i<300
         xOverTime(idx) = aprilTagData{i}(1);
         yOverTime(idx) = aprilTagData{i}(2);
         angleOverTime(idx) = aprilTagData{i}(6);

@@ -66,7 +66,7 @@ for i=1:length(splitIndexesEnd)
     try
         plot(apriltag_times(startIdx:endIdx), rad2deg(getClosestAngles(angleOverTime(startIdx:endIdx), angleOverTime(1))), 'b');
     catch
-        keyboard
+        %keyboard
     end
 end
 

@@ -19,13 +19,13 @@
 %     0.0    1.0];
 
 clear file_read_test;
-logfilename = './apriltag-logs/path_54_23_12_13_03_36_24.log';
+logfilename = './apriltag-logs/path_54_24_02_11_20_04_07.log';
 file_read_test(logfilename);
 %file_read_test();
 
 startEndTimes = get_start_end_times();
-time1 = startEndTimes{1};
-time2 = startEndTimes{2};
+time1 = startEndTimes{2};
+time2 = startEndTimes{3};
 
 [lidar_times, xTransform, yTransform, angleTransform, ...
         xOverTime, yOverTime, angleOverTime, ~, xvals, yvals] = lidar_icp_7(logfilename, time1, time2);

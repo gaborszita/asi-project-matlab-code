@@ -29,9 +29,6 @@ Log files from the robot used for data analysis are available here: https://driv
 - verify_path.m - verifies robot path
 - get_field.m - this file contains the robot field
 
-## Files to check TODO
-- lidar_icp_8.m - seems like a lidar icp with gyro position test file, consider deleting
-
 ## Other info
 Toolboxes used:
 - MATLAB Lidar Toolbox
